@@ -1,26 +1,28 @@
 <template>
   <q-page class="material">
     <div v-if="material" class="page-padding">
-      <h2 class="q-title">
+      <h2 v-if="showTitle" class="q-title">
         {{material.title}}
       </h2>
-      <div v-if="category" style="margin-top: -10px;" class="q-mb-md">
+      <div v-else class="page-padding-top"></div>
+
+      <div v-if="showCategory" style="margin-top: -10px;" class="q-mb-md">
         <span class="text-grey-7">{{$tl("category")}} </span>
         <router-link :to="category.getRoute()">{{category.title}}</router-link>
       </div>
-      <div v-if="material.isDeleted" class="text-red q-mb-md">
+      <div v-if="material.deletedDate" class="text-red q-mb-md">
         <q-chip icon="fas fa-trash" color="red" text-color="white" :label="$tl('deleted')"/>
       </div>
       <div class="material-text q-mb-lg" v-html="material.text">
       </div>
       <div v-if="material.tags && material.tags.length > 0" class="q-mt-lg" style="text-align: center">
         {{$tl("tags")}}
-        <q-chip class="q-mx-xs" dense color="info" v-for="tag in material.tags" :key="tag">
+        <q-chip class="q-mx-xs" dense v-for="tag in material.tags" :key="tag">
           {{tag}}
         </q-chip>
       </div>
       <div class="q-py-sm text-grey-8 flex" style="align-items: center">
-        <div class="q-mr-md">
+        <div v-if="showUser" class="q-mr-md">
           <router-link :to="{name: 'User', params: {link: material.authorLink}}">
             <img class="avatar mat-avatar" :src="$imagePath(material.authorAvatar)"/>{{material.authorName}}
           </router-link>
@@ -28,26 +30,30 @@
         <div style="flex-grow: 1">
 
         </div>
-        <div class="q-mr-md" v-if="canEdit">
+        <div class="q-mr-md edit-btn-block" v-if="canEdit">
           <a href="#" style="display: inline-flex; align-items: center;"
              @click.prevent="$router.push({name: 'EditMaterial', params: {id: material.id}})">
             <q-icon name="fas fa-edit" class="q-mr-xs"/>
             {{$tl("edit")}}</a>
         </div>
-        <div class="q-mr-md" v-if="!material.isDeleted && canDelete">
+        <div class="q-mr-lg" v-if="!material.deletedDate && canDelete">
           <a href="#" style="display: inline-flex; align-items: center;"
              @click.prevent="deleteMaterial">
             <q-icon name="fas fa-trash"/>
           </a>
         </div>
-        <div class="q-mr-md" v-if="material.isDeleted && canRestore">
+        <div class="q-mr-md" v-if="material.deletedDate && canRestore">
           <a href="#" style="display: inline-flex; align-items: center;"
              @click.prevent="restoreMaterial">
             <q-icon name="fas fa-trash-restore"/>
           </a>
         </div>
-        <div class="mat-date-color">
-          <q-icon name="far fa-clock"/>
+        <div v-if="showVisitsCount" class="visits date-info-block q-mr-md">
+          <q-icon name="far fa-eye" class="q-mr-xs"/>
+          {{material.visitsCount}}
+        </div>
+        <div v-if="showDate" class="mat-date date-info-block">
+          <q-icon name="far fa-clock" class="q-mr-xs"/>
           {{$formatDate(material.publishDate)}}
         </div>
       </div>
@@ -55,7 +61,7 @@
       <div class="clear"></div>
     </div>
 
-    <div id="comments" v-if="material && comments" class="comments">
+    <div id="comments" v-if="material && comments && comments.length > 0" class="comments">
       <hr class="hr-sep"/>
       <div v-for="(comment,index) in comments" :key="comment.id">
         <CommentContainer class="page-padding" :comment="comment" :checkLastOwn="checkLastOwn"
@@ -118,6 +124,26 @@
       category() {
         return this.$store.getters.getCategory(this.categoryName);
       },
+      showTitle() {
+        return this.category
+          && !(this.category.settingsJson?.hideTitle || this.material.settingsJson?.hideTitle);
+      },
+      showCategory() {
+        return this.category
+          && !(this.category.settingsJson?.hideCategory || this.material.settingsJson?.hideCategory);
+      },
+      showDate() {
+        return this.category
+          && (this.canEdit || !(this.category.settingsJson?.hideFooter || this.material.settingsJson?.hideFooter));
+      },
+      showVisitsCount() {
+        return this.category
+          && (this.canEdit || !(this.category.settingsJson?.hideFooter || this.material.settingsJson?.hideFooter));
+      },
+      showUser() {
+        return this.category
+          && (this.canEdit || !(this.category.settingsJson?.hideFooter || this.material.settingsJson?.hideFooter));
+      },
       canCommentWrite() {
         if (this.material.isCommentsBlocked)
           return false;
@@ -165,7 +191,7 @@
     },
     methods: {
       prepareLocalLinks() {
-        prepareLocalLinks(this.$el,'material-text');
+        prepareLocalLinks.call(this, this.$el, 'material-text');
       },
       async loadDataMaterial() {
         await this.$store.dispatch('request',
@@ -176,6 +202,13 @@
             }
           }).then((response) => {
             this.material = response.data;
+            if (this.material.settingsJson) {
+              try {
+                this.material.settingsJson = JSON.parse(this.material.settingsJson);
+              } catch (e) {
+
+              }
+            }
             this.title = this.material.title;
             this.$nextTick(() => {
               this.prepareLocalLinks();
@@ -248,10 +281,6 @@
 <style lang="stylus">
 
   .material {
-    .mat-date-color {
-      color: $grey-7;
-    }
-
     .hr-sep {
       height: 0;
       border-top: solid #d3eecc 1px !important;
@@ -264,6 +293,10 @@
 
     .comments {
       margin-top: 18px;
+    }
+
+    .q-chip {
+      background-color: #e5fbe3;
     }
   }
 

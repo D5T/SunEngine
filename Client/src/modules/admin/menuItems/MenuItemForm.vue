@@ -89,6 +89,9 @@
 </template>
 
 <script>
+  import {isJson} from 'sun';
+
+
   function createRules() {
     return {
       name: [
@@ -120,14 +123,7 @@
     }
   }
 
-  function isJson(str) {
-    try {
-      JSON.parse(str);
-    } catch {
-      return false;
-    }
-    return true;
-  }
+
 
   export default {
     name: 'MenuItemForm',
@@ -309,7 +305,7 @@
         });
         this.$store.dispatch('request',
           {
-            url: '/Admin/UserRolesAdmin/GetAllUserRoles'
+            url: '/Admin/UserRolesAdmin/GetAllRoles'
           })
           .then(response => {
               this.allRoles = response.data;

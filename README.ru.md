@@ -1,10 +1,10 @@
 ﻿# SunEngine
 
-Движок для сайтов с функциональностью форума, статей, блогов.
+Движок для сайтов с возможностями форума, статей и блогов.
 
 <img src="https://github.com/Dmitrij-Polyanin/SunEngine/blob/master/Client/src/statics/SunEngine.svg" width="250" alt="SunEngine Logo" />
 
-Версия: 1.8.2
+Версия: 1.10.4
 
 Демо: [demo.sunengine.site](http://demo.sunengine.site)    
 
@@ -16,7 +16,7 @@
 
 #### Дружественный интерфейс
 - Одностраничное приложение c красивым интерфейсом.
-- Работает на персональных компьютерах, планшетах, мобильных телефонах.
+- Работает на персональных компьютерах, планшетах и мобильных телефонах.
 
 #### Сделано с любовью ❤
 - Красивый код, который я постоянно улучшаю и совершенствую.
@@ -81,6 +81,7 @@ SunEngine можно запустить на Windows, Linux и macOS.
 6. Запустить клиент `quasar dev` — откроется браузер с сайтом.
 
 ### Контакты  
-- Дмитрий Полянин  
-- Telegram: [@okeanij](https://t.me/Okeanij)    
-- Группа в Telegram: [@SunEngine](https://t.me/SunEngine)
+- [Дмитрий Полянин](https://github.com/Dmitrij-Polyanin)
+- Skype: [dmitrij.polyanin](skype:dmitrij.polyanin?chat)
+- Telegram: [@okeanij](tg://resolve?domain=Okeanij)
+- Группа в Telegram: [@SunEngine](tg://resolve?domain=SunEngine)

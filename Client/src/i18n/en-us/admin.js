@@ -16,6 +16,7 @@ export default {
     deleteConfirm: "You want to remove the category?",
     parent: "Parent: ",
     hideCb: "Hide",
+    settingsJson: "Json settings",
     appendUrlTokenCb: "Add to URL",
     appendUrlTokenInfo: "(use only if you understand what it is)",
     isMaterialsContainerCb: "Contains materials",
@@ -42,6 +43,9 @@ export default {
       },
       parent: {
         required: "Select parent category"
+      },
+      settingsJson: {
+        jsonFormatError: "Invalid Json format",
       }
     }
   },
@@ -181,6 +185,8 @@ export default {
     rolesPermissionsCaption: "",
     cacheSettings: "Cache settings",
     cacheSettingsCaption: "",
+    cypherSecrets: "Cypher keys",
+    cypherSecretsCaption:"",
     imagesCleaner: "Сleaner",
     imagesCleanerCaption: "",
     deletedElements: "Deleted elements",
@@ -210,6 +216,9 @@ export default {
         invalidValue: "Value can`t be lower 0",
       }
     }
+  },
+  CypherSecrets: {
+    title: "Reset cypher keys"
   },
   DeletedElements: {
     title: "Deleted elements",

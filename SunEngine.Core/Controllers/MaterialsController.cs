@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using SunEngine.Core.Cache.Services;
+using SunEngine.Core.Cache.Services.Counters;
 using SunEngine.Core.DataBase;
 using SunEngine.Core.Errors;
 using SunEngine.Core.Filters;
@@ -25,18 +26,21 @@ namespace SunEngine.Core.Controllers
         protected readonly ICategoriesCache categoriesCache;
         protected readonly IMaterialsManager materialsManager;
         protected readonly IMaterialsPresenter materialsPresenter;
-
+        protected readonly IMaterialsVisitsCounterCache materialsVisitsCounterCache;
+        
         public MaterialsController(
             MaterialsAuthorization materialsAuthorization,
             ICategoriesCache categoriesCache,
             IMaterialsManager materialsManager,
             IMaterialsPresenter materialsPresenter,
+            IMaterialsVisitsCounterCache materialsVisitsCounterCache,
             IServiceProvider serviceProvider) : base(serviceProvider)
         {
             this.materialsAuthorization = materialsAuthorization;
             this.categoriesCache = categoriesCache;
             this.materialsManager = materialsManager;
             this.materialsPresenter = materialsPresenter;
+            this.materialsVisitsCounterCache = materialsVisitsCounterCache;
         }
 
         [HttpPost]
@@ -62,9 +66,11 @@ namespace SunEngine.Core.Controllers
             if (materialView.IsHidden && !materialsAuthorization.CanHide(User.Roles, category))
                 return Unauthorized();
 
-            if (materialView.IsDeleted && !materialsAuthorization.CanRestoreAsync(User, category.Id))
+            if (materialView.DeletedDate != null && !materialsAuthorization.CanRestoreAsync(User, category.Id))
                 return Unauthorized();
 
+            materialView.VisitsCount += materialsVisitsCounterCache.CountMaterial(UserOrIpKey, materialView.Id);
+            
             return Json(materialView);
         }
 
@@ -101,6 +107,9 @@ namespace SunEngine.Core.Controllers
 
             if (materialData.IsHidden && materialsAuthorization.CanBlockComments(User.Roles, category))
                 material.IsCommentsBlocked = true;
+            
+            if (materialsAuthorization.CanEditSettingsJson(User.Roles, category))
+                material.SettingsJson = materialData.SettingsJson;
 
             contentCache.InvalidateCache(category.Id);
 
@@ -151,6 +160,10 @@ namespace SunEngine.Core.Controllers
                 && materialsAuthorization.CanMove(User, categoriesCache.GetCategory(material.CategoryId), newCategory))
                 material.CategoryId = newCategory.Id;
 
+            material.SettingsJson = materialsAuthorization.CanEditSettingsJson(User.Roles, newCategory) 
+                ? materialData.SettingsJson
+                : null;
+            
             await materialsManager.UpdateAsync(material, materialData.Tags, newCategory);
             return Ok();
         }
@@ -275,5 +288,7 @@ namespace SunEngine.Core.Controllers
 
         public bool IsHidden { get; set; }
         public bool IsCommentsBlocked { get; set; }
+        
+        public string SettingsJson { get; set; }
     }
 }

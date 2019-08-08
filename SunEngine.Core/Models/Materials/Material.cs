@@ -56,20 +56,21 @@ namespace SunEngine.Core.Models.Materials
         public int SortNumber { get; set; }
         
         public bool IsCommentsBlocked { get; set; }
-
-        public bool IsDeleted { get; set; }
         
         public bool IsHidden { get; set; }
-
-
+        
         /// <summary>
         /// Count of not hidden and not deleted comments
         /// </summary>
         public int CommentsCount { get; set; }
 
+        public DateTime? DeletedDate { get; set; }
+
         [Association(ThisKey = "Id", OtherKey = "MaterialId")]
         public virtual ICollection<TagMaterial> TagMaterials { get; set; }
-
         
+        public string SettingsJson { get; set; } 
+        
+        public int VisitsCount { get; set; }
     }
 }

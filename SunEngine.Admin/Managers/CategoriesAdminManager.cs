@@ -34,7 +34,7 @@ namespace SunEngine.Admin.Managers
         }
 
 
-        public async Task CreateCategoryAsync(Category category)
+        public async ValueTask CreateCategoryAsync(Category category)
         {
             category.Name = category.Name.Trim();
             category.NameNormalized = Normalizer.Normalize(category.Name);
@@ -68,7 +68,7 @@ namespace SunEngine.Admin.Managers
         }
 
 
-        public async Task UpdateCategoryAsync(Category categoryUpdate)
+        public async ValueTask UpdateCategoryAsync(Category categoryUpdate)
         {
             if (categoryUpdate == null)
                 throw new ArgumentNullException(nameof(categoryUpdate));
@@ -123,14 +123,14 @@ namespace SunEngine.Admin.Managers
                 throw new SunModelValidationException(nameof(category), nameof(category.Title));
         }
 
-        public async Task CategoryUp(string name)
+        public async ValueTask CategoryUp(string name)
         {
             var category = await db.Categories.FirstOrDefaultAsync(x => x.Name == name);
             if (category == null)
                 throw new SunEntityNotFoundException(nameof(Category), name, "Name");
 
             var category2 = await db.Categories
-                .Where(x => x.ParentId == category.ParentId && x.SortNumber < category.SortNumber && !x.IsDeleted)
+                .Where(x => x.ParentId == category.ParentId && x.SortNumber < category.SortNumber && x.DeletedDate == null)
                 .OrderByDescending(x => x.SortNumber).FirstOrDefaultAsync();
 
             if (category2 == null)
@@ -160,14 +160,14 @@ namespace SunEngine.Admin.Managers
             }
         }
 
-        public async Task CategoryDown(string name)
+        public async ValueTask CategoryDown(string name)
         {
             var category = await db.Categories.FirstOrDefaultAsync(x => x.Name == name);
             if (category == null)
                 throw new SunEntityNotFoundException(nameof(Category), name, "Name");
 
             var category2 = await db.Categories
-                .Where(x => x.ParentId == category.ParentId && x.SortNumber > category.SortNumber && !x.IsDeleted)
+                .Where(x => x.ParentId == category.ParentId && x.SortNumber > category.SortNumber && x.DeletedDate == null)
                 .OrderBy(x => x.SortNumber).FirstOrDefaultAsync();
 
             if (category2 == null)
@@ -199,10 +199,10 @@ namespace SunEngine.Admin.Managers
 
         public Task CategoryMoveToTrashAsync(string name)
         {
-            return db.Categories.Where(x => x.Name == name).Set(x => x.IsDeleted, x => true).UpdateAsync();
+            return db.Categories.Where(x => x.Name == name).Set(x => x.DeletedDate, x => DateTime.UtcNow).UpdateAsync();
         }
 
-        public async Task RemakeAllMaterialsPreviewsAsync(Category category)
+        public async ValueTask RemakeAllMaterialsPreviewsAsync(Category category)
         {
             if (category == null)
                 throw new SunEntityNotFoundException(nameof(category));
